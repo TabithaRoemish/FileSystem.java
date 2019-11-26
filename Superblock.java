@@ -11,7 +11,7 @@ class Superblock {
 
    public SuperBlock( int diskSize ) {
 
-	...
+	byte[] superBlock = new byte[Disk.blockSize];
 
    }
 
