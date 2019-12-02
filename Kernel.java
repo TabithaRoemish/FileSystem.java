@@ -49,6 +49,7 @@ public class Kernel
    private static Scheduler scheduler;
    private static Disk disk;
    private static Cache cache;
+   private static FileSystem file;
 
    // Synchronized Queues
    private static SyncQueue waitQueue;  // for threads to wait for their child
@@ -179,14 +180,14 @@ public class Kernel
                case OPEN:    // to be implemented in project
 				  if((myTCB = scheduler.getMyTcb( ) ) != null )
 					{ String[] s = ( String[] ) args;
-					return myTCB.getFD ( SysLib.open( s[0], s[1] ) );}
+					return myTCB.getFD ( file.open( s[0], s[1] ) );}
 				  else
 				    return ERROR;
                case CLOSE:   // to be implemented in project
 				  if ( ( myTCB = scheduler.getMyTcb( ) ) ! = null )
 				  { 
 				    FileTableEntry fEnt = myTCB.getFtEnt ( param ); // get FTE to close file
-					if ( fEnt == null || SysLib.close( myTCB.getFD ( fEnt ) ) == false )
+					if ( fEnt == null || file.close( myTCB.getFD ( fEnt ) ) == false )
 						return ERROR;
 					if ( myTCB.returnFd( param ) != fEnt )
 						return ERROR;
@@ -200,7 +201,7 @@ public class Kernel
 					  if (fEnt == null)
 						return ERROR;
 					  else
-						return myTCB.getFD( fEnt );
+						return file.size( myTCB.getFD( fEnt ) );
 				  }
                case SEEK:    // to be implemented in project
 				  if ( ( myTCB = scheduler.getMyTcb( ) ) != null)
@@ -208,13 +209,13 @@ public class Kernel
 					  int[] argument = ( int[] )args;
 					  FileTableEntry fEnt = myTCB.getFtEnt( param );
 					  if (fEnt ! = null)
-						return SysLib.seek( myTCB.getFD(fEnt), argument[0], argument[1] );
+						return file.seek( myTCB.getFD(fEnt), argument[0], argument[1] );
 				  }
                   return ERROR;
                case FORMAT:  // to be implemented in project
-                  return ( SysLib.format( param ) == true ) ? OK : ERROR;
+                  return ( file.format( param ) == true ) ? OK : ERROR;
                case DELETE:  // to be implemented in project
-                  return ( SysLib.delete( (string)args ) == true ) ? OK : ERROR;
+                  return ( file.delete( (string)args ) == true ) ? OK : ERROR;
             }
             return ERROR;
          case INTERRUPT_DISK: // Disk interrupts
