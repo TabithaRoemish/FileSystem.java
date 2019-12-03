@@ -106,18 +106,18 @@ public class Inode {
 	   return targetBlock;   
    }
 
-   int getIndexBlkNum(int Ptr, int newBlock)
+   int getIndexBlkNum(int Ptr, int block)
    {
-	   // return the disk index of the free block
+	   // return the disk index of the block
    }
    
    
    boolean setIndexBlock( int FreeBlock)
    {
-	  //
+	  //add free block
    }
    
-   int freeIndirectBlk()
+   byte[] freeIndirectBlk()
    {
 	   
    }
