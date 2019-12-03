@@ -9,7 +9,7 @@ class Superblock {
    private static int AT_TI = 4; //+ 4 size of int in superblock
    private static int AT_FL = 8; // + 4 + 4 in superblock byte array
    private static int ERROR = -1;
-   private static int OK = 1;
+   private static int OK = 0;
    
 
    public Superblock( int diskSize ) {
@@ -52,8 +52,8 @@ class Superblock {
 	   
    }
    
-   public boolean releaseBlock( int blockNum )
-   {
+   public boolean pushFreeBlk( int blockNum )
+   { //release block
 	   int initialBlock = ( totalInodes / (Disk.blockSize/Inode.iNodeSize)) + 1;
 	   if( blockNum > totalBlocks || blockNum < initialBlock ) 
 	   {
