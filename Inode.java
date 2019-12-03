@@ -86,19 +86,40 @@ public class Inode {
    }
 
    // need to add methods to match fileSystem
+   int takeTargetBlk(int Ptr)
+   {
+	   //return block number
+	   //or return -1 for error
+	   int targetBlock = ERROR;
+	   int location = Ptr / Disk.blockSize;
+	   
+	   if ( location < directSize )
+			targetBlock = direct[location];
+		
+	   if ( this.indirect != ERROR )
+	   {
+		   byte [] diskBlock = new byte[Disk.diskSize];
+		   if (SysLib.rawread(this.indirect, diskBlock) != ERROR )
+				targetBlock = SisLib.bytes2short(diskBlock, ( ( location - directSize ) * 2 ) );
+	   }
+	   
+	   return targetBlock;   
+   }
+
    int getIndexBlkNum(int Ptr, int newBlock)
    {
-	   
+	   // return the disk index of the free block
    }
    
-   int takeTargetBlk(itn Ptr)
+   
+   boolean setIndexBlock( int FreeBlock)
    {
-	   
+	  //
    }
    
-   int setIndexBlock( int FreeBlock)
+   int freeIndirectBlk()
    {
-	   int size = this.length / Disk.blockSize + 1;
+	   
    }
    
 
