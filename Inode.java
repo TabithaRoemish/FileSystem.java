@@ -3,7 +3,7 @@ public class Inode {
    private final static int iNodeSize = 32;       // fix to 32 bytes
    private final static int directSize = 11;      // # direct pointers
    private final static int ERROR = -1;
-   private final static int OK = 1;
+   private final static int OK = 0;
    private final static int AT_LNG = 0;
    private final static int AT_CNT = 4;
    private final static int AT_FLG = 6;
@@ -108,18 +108,57 @@ public class Inode {
 
    int getIndexBlkNum(int Ptr, int block)
    {
-	   // return the disk index of the block
+	   // return the diskblockindex of Inode of the block or
+	   // return ERROR - return -3 if indirect is blank
+	   int diskBlockIndex = Ptr / Disk.blockSize;
+	   if (diskBlockIndex < directSize )
+	   {
+		   if (direct[diskBlockIndex] >= 0 )
+				return ERROR;
+		   if (diskBlockIndex > 0 && direct[diskBlockIndex - 1] == ERROR )
+				return ERROR;
+	   }
+	   direct[diskBlockIndex] = block;
+	   return OK;
+	   
+	   if (this.indirect < 0 )
+			return -3; // error checked for in fileSystem
    }
    
    
-   boolean setIndexBlock( int FreeBlock)
+   boolean setIndexBlock( short FreeBlock)
    {
-	  //add free block
+		for (int i = 0; i < directSize; i++ )
+		{
+			if ( direct[i] == ERROR )
+				return false;
+		}
+		if ( indirect != ERROR )
+			return false;
+		
+		this.indirect = FreeBlock;
+		byte[] b = new byte[Disk.blockSize];
+		
+		for (int i = 0; i < (Disk.blockSize/2); i++)
+		{
+			SysLib.short2bytes( ( short ) -1,  b , i*2);
+		}
+		SysLib.rawwrite(FreeBlock, b);
+		
+		return true;
    }
    
    byte[] freeIndirectBlk()
    {
-	   
+	   if ( this.indirect >=0 )
+	   {
+			byte[] b = new byte[Disk.blockSize];
+			SysLib.rawread( indirect, b );
+			this.indriect = ERROR; //release indirect
+			return b;
+	   }
+	   else 
+			return null;
    }
    
 
