@@ -1,7 +1,7 @@
 public class Inode {
 
-   private final static int iNodeSize = 32;       // fix to 32 bytes
-   private final static int directSize = 11;      // # direct pointers
+   public final static int iNodeSize = 32;       // fix to 32 bytes
+   public final static int directSize = 11;      // # direct pointers
    private final static int ERROR = -1;
    private final static int OK = 0;
    private final static int AT_LNG = 0;
@@ -38,14 +38,14 @@ public class Inode {
 	  
 	  // read Inode values from block
 	  int InodeAddress = ( iNumber % NODES_PER_DISKBLOCK ) * iNodeSize;
-	  this.length = SysLib.bytes2int( diskBlock, InodeAddress );
-	  this.count = SysLib.bytes2short(diskBlock, ( InodeAddress + AT_CNT ) );
-	  this.flag = SysLib.bytes2short(diskBlock, ( IndodeAddress + AT_FLG ) );
+	  this.length = SysLib.bytes2int( b, InodeAddress );
+	  this.count = SysLib.bytes2short( b, ( InodeAddress + AT_CNT ) );
+	  this.flag = SysLib.bytes2short( b, ( InodeAddress + AT_FLG ) );
 	  for (int i = 0; i < directSize; i++ )
 	  {
-		  this.direct[i] = SysLib.bytes2short(diskBlock, ( InodeAddress + AT_DIR + ( i * 2 ) ) ); //2 bytes per direct[]
+		  this.direct[i] = SysLib.bytes2short(b, ( InodeAddress + AT_DIR + ( i * 2 ) ) ); //2 bytes per direct
 	  }
-	  this.indirect = SysLib.bytes2short( diskBlock, (InodeAddress + AT_IND ) );
+	  this.indirect = SysLib.bytes2short( b, (InodeAddress + AT_IND ) );
 	  
    }
 
@@ -54,7 +54,7 @@ public class Inode {
 	int toDisk( short iNumber ) {                  // save to disk as the i-th inode
       
 
-	  if( iNumber < 0 || iNumber > Superblock.MAX_INODE_BLOCKS )
+	  if( iNumber < 0 || iNumber > 64 ) // total number of iNodes
 		return ERROR;
 		
 	  // find diskblock and InodeAddress
@@ -62,17 +62,17 @@ public class Inode {
 	  int InodeAddress = ( iNumber % NODES_PER_DISKBLOCK ) * iNodeSize;
 	  
 	  //get current block data
-	  byte[] updateBlock = byte[Disk.blockSize];
+	  byte[] updateBlock = new byte[Disk.blockSize];
 	  if (SysLib.rawread(diskBlock, updateBlock) == ERROR )
 		return ERROR;
 	  
 	  // add properties to updateBlock
 	  SysLib.int2bytes(this.length, updateBlock, InodeAddress);
 	  SysLib.short2bytes(this.count, updateBlock, ( InodeAddress + AT_CNT ) );
-	  SysLib.short2bytes(this.flag, updateBlock, ( IndodeAddress + AT_FLG ) );
+	  SysLib.short2bytes(this.flag, updateBlock, ( InodeAddress + AT_FLG ) );
 	  for (int i = 0; i < directSize; i++ )
 	  {
-		  SysLib.short2bytes(this.indirect[i], updateBlock, ( InodeAddress + AT_DIR + ( i * 2 ) ) ); // 2 bytes per direct[]
+		  SysLib.short2bytes(this.direct[i], updateBlock, ( InodeAddress + AT_DIR + ( i * 2 ) ) ); 
 	  }
 	  SysLib.short2bytes(this.indirect, updateBlock, ( InodeAddress + AT_IND ) );
 	  
@@ -98,15 +98,15 @@ public class Inode {
 		
 	   if ( this.indirect != ERROR )
 	   {
-		   byte [] diskBlock = new byte[Disk.diskSize];
+		   byte [] diskBlock = new byte[Disk.blockSize];
 		   if (SysLib.rawread(this.indirect, diskBlock) != ERROR )
-				targetBlock = SisLib.bytes2short(diskBlock, ( ( location - directSize ) * 2 ) );
+				targetBlock = SysLib.bytes2short(diskBlock, ( ( location - directSize ) * 2 ) );
 	   }
 	   
 	   return targetBlock;   
    }
 
-   int getIndexBlkNum(int Ptr, int block)
+   int getIndexBlkNum(int Ptr, short block)
    {
 	   // return the diskblockindex of Inode of the block or
 	   // return ERROR - return -3 if indirect is blank
@@ -114,15 +114,38 @@ public class Inode {
 	   if (diskBlockIndex < directSize )
 	   {
 		   if (direct[diskBlockIndex] >= 0 )
-				return ERROR;
+		   {
+			   return ERROR;
+		   }
 		   if (diskBlockIndex > 0 && direct[diskBlockIndex - 1] == ERROR )
-				return ERROR;
+		   {
+			   return ERROR;
+		   }
+		   
+		   direct[diskBlockIndex] = block;
+		   return OK;
 	   }
-	   direct[diskBlockIndex] = block;
-	   return OK;
 	   
 	   if (this.indirect < 0 )
-			return -3; // error checked for in fileSystem
+	   {
+		   return -3; // error checked for in fileSystem
+	   }
+	   else
+	   {
+            byte[] data = new byte[Disk.blockSize];
+            SysLib.rawread(indirect,data);
+
+            int cal = (diskBlockIndex - directSize) * 2;
+            if ( SysLib.bytes2short(data, cal) > 0){
+                return -1;
+            }
+            else
+            {
+                SysLib.short2bytes(block, data, cal);
+                SysLib.rawwrite(indirect, data);
+            }
+        }
+        return 0;  
    }
    
    
@@ -154,12 +177,13 @@ public class Inode {
 	   {
 			byte[] b = new byte[Disk.blockSize];
 			SysLib.rawread( indirect, b );
-			this.indriect = ERROR; //release indirect
+			this.indirect = ERROR; //release indirect
 			return b;
 	   }
 	   else 
 			return null;
    }
+   
    
 
 }

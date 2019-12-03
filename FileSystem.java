@@ -15,16 +15,16 @@ public class FileSystem {
     private static final int SEEK_CUR = 1;
     private static final int SEEK_END = 2;
 
-    private SuperBlock superblock;
+    private Superblock superblock;
     private Directory directory;
     private FileTable filetable;
 
     public FileSystem(int blocks) {
-        superblock = new SuperBlock(blocks);
+        superblock = new Superblock(blocks);
         directory = new Directory(superblock.totalInodes);
         filetable = new FileTable(directory);
 
-        FileTableEntry directoryEntry = open("/", "r");
+        FileTableEntry dirEntry = open("/", "r");
         int directorySize = fsize(dirEntry);
         if (directorySize > 0) {
             byte[] directoryData = new byte[directorySize];
@@ -62,7 +62,7 @@ public class FileSystem {
         return tableEntry;
     }
 
-    public boolean close(FileTableEntry tblEnty) {
+    public boolean close(FileTableEntry tblEntry) {
         if (tblEntry == null)
             return false;
 
@@ -149,22 +149,22 @@ public class FileSystem {
                 int tempSeekPtr = tblEntry.seekPtr % Disk.blockSize;
                 int difference = Disk.blockSize - tempSeekPtr;
 
-                if (difference <= curSize) {
+                if (difference <= currentSize) {
                     System.arraycopy(buffer, writeBytes, data, tempSeekPtr, difference);
 
                     SysLib.rawwrite(target, data);
 
                     tblEntry.seekPtr += difference;
                     writeBytes += difference;
-                    curSize -= difference;
+                    currentSize -= difference;
                 } else {
-                    System.arraycopy(buffer, writeBytes, data, tempSeekPtr, curSize);
+                    System.arraycopy(buffer, writeBytes, data, tempSeekPtr, currentSize);
 
                     SysLib.rawwrite(target, data);
 
-                    tblEntry.seekPtr += curSize;
-                    writeBytes += curSize;
-                    curSize = 0;
+                    tblEntry.seekPtr += currentSize;
+                    writeBytes += currentSize;
+                    currentSize = 0;
                 }
             }
 

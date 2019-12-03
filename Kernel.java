@@ -178,44 +178,44 @@ public class Kernel
                   cache.flush( );
                   return OK;
                case OPEN:    // to be implemented in project
-				  if((myTCB = scheduler.getMyTcb( ) ) != null )
+				  if((myTcb = scheduler.getMyTcb( ) ) != null )
 					{ String[] s = ( String[] ) args;
-					return myTCB.getFD ( file.open( s[0], s[1] ) );}
+					return myTcb.getFd( file.open( s[0], s[1] ) );}
 				  else
 				    return ERROR;
                case CLOSE:   // to be implemented in project
-				  if ( ( myTCB = scheduler.getMyTcb( ) ) ! = null )
+				  if ( ( myTcb = scheduler.getMyTcb( ) ) != null )
 				  { 
-				    FileTableEntry fEnt = myTCB.getFtEnt ( param ); // get FTE to close file
-					if ( fEnt == null || file.close( myTCB.getFD ( fEnt ) ) == false )
+				    FileTableEntry fEnt = myTcb.getFtEnt ( param ); // get FTE to close file
+					if ( fEnt == null || file.close( fEnt ) == false )
 						return ERROR;
-					if ( myTCB.returnFd( param ) != fEnt )
+					if ( myTcb.returnFd( param ) != fEnt )
 						return ERROR;
 					return OK;
 				  }
                   return ERROR;
                case SIZE:    // to be implemented in project
-				  if ( ( myTCB = scheduler.getMyTcb( ) ) != null)
+				  if ( ( myTcb = scheduler.getMyTcb( ) ) != null)
 				  {
-					  FileTableEntry fEnt = myTCB.getFtEnt( param );
+					  FileTableEntry fEnt = myTcb.getFtEnt( param );
 					  if (fEnt == null)
 						return ERROR;
 					  else
-						return file.size( myTCB.getFD( fEnt ) );
+						return file.fsize( fEnt );
 				  }
                case SEEK:    // to be implemented in project
-				  if ( ( myTCB = scheduler.getMyTcb( ) ) != null)
+				  if ( ( myTcb = scheduler.getMyTcb( ) ) != null)
 				  {
 					  int[] argument = ( int[] )args;
-					  FileTableEntry fEnt = myTCB.getFtEnt( param );
-					  if (fEnt ! = null)
-						return file.seek( myTCB.getFD(fEnt), argument[0], argument[1] );
+					  FileTableEntry fEnt = myTcb.getFtEnt( param );
+					  if (fEnt != null)
+						return file.seek( fEnt, argument[0], argument[1] );
 				  }
                   return ERROR;
                case FORMAT:  // to be implemented in project
-                  return ( file.format( param ) == true ) ? OK : ERROR;
+                  return ( file.format( param ) ) ? OK : ERROR;
                case DELETE:  // to be implemented in project
-                  return ( file.delete( (string)args ) == true ) ? OK : ERROR;
+                  return ( file.delete( (String)args ) == true ) ? OK : ERROR;
             }
             return ERROR;
          case INTERRUPT_DISK: // Disk interrupts
