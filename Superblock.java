@@ -12,12 +12,11 @@ class Superblock {
    private static int OK = 1;
    
 
-   public SuperBlock( int diskSize ) {
+   public Superblock( int diskSize ) {
 	 
 	// read superblock
 	byte[] SB = new byte[Disk.blockSize];
-	if (SysLib.rawread( 0, SB ) == ERROR )
-		throw new FileSystemException("Error reading Disk: SuperBlock");
+	SysLib.rawread( 0, SB );
 	
 	//read superblock disk into properties
 	totalBlocks = SysLib.bytes2int( SB, AT_TB ); 
@@ -56,12 +55,14 @@ class Superblock {
    public boolean releaseBlock( int blockNum )
    {
 	   int initialBlock = ( totalInodes / (Disk.blockSize/Inode.iNodeSize)) + 1;
-	   if( blockNum > totalBlocks || blockNum < initialBlock ) )
-			return false;
+	   if( blockNum > totalBlocks || blockNum < initialBlock ) 
+	   {
+		   return false;
+	   }
 	   else
 	   {
 			byte[] b = new byte[Disk.blockSize];
-			SysLib.int2bytes( this.freeList, b ); //change freeBlock Int to bytes
+			SysLib.int2bytes( this.freeList, b, 0 ); //change freeBlock Int to bytes
 			if (SysLib.rawwrite ( blockNum, b ) == ERROR ) // write bytes to released block
 				return false;
 			this.freeList = blockNum; //set freeList head to released Block
@@ -104,14 +105,13 @@ class Superblock {
 	   byte[] b = new byte[Disk.blockSize];
 	   for (int i = this.freeList; i < totalBlocks; i++)
 	   {
-		   if( ( i + 1 ) = totalBlocks ) // end of freeList 
+		   if( ( i + 1 ) == totalBlocks ) // end of freeList 
 				SysLib.int2bytes( -1, b, 0 ); // add -1 to start of block
 		   else
 				SysLib.int2bytes( ( i + 1), b, 0 ); //otherwise add i+1
 		   
 		   //write buffer to block
-		   if( SysLib.rawwrite( i, b ) == ERROR )
-		     throw new FileSystemException("Could not write to disk: SuperBlock");
+		   SysLib.rawwrite( i, b );
 	   }
    }
    
@@ -122,8 +122,7 @@ class Superblock {
 	   SysLib.int2bytes( totalBlocks, saveBuffer, AT_TB );
 	   SysLib.int2bytes( totalInodes, saveBuffer, AT_TI );
 	   SysLib.int2bytes( freeList, saveBuffer, AT_FL );
-	   if (SysLib.rawwrite( 0, saveBuffer ) == ERROR )
-		throw new FileSystemException ("Could not write to disk: Superblock");
+	   SysLib.rawwrite( 0, saveBuffer );
 	   
    }
    
