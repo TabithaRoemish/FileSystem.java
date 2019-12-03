@@ -34,7 +34,7 @@ class Superblock {
 
    }
    
-   public int getFreeBlock( )
+   public int lookforFreeBlk( )
    {
 	   if( freeList != ERROR )
 	   {
