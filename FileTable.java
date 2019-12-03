@@ -30,7 +30,7 @@ public class FileTable {
 
     // major public methods
     public synchronized FileTableEntry falloc(String filename, String mode) {
-        Inode tempINode;
+        Inode tempInode;
         short iNumber;
 
         for (; ; ) {
