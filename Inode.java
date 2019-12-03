@@ -84,16 +84,22 @@ public class Inode {
 	  return OK;
 	  
    }
-   
-   int addDiskBlock ( int freeBlock )
+
+   // need to add methods to match fileSystem
+   int getIndexBlkNum(int Ptr, int newBlock)
    {
-	   
 	   
    }
    
-   int getSize( )
+   int takeTargetBlk(itn Ptr)
    {
-	   return this.length;
+	   
    }
+   
+   int setIndexBlock( int FreeBlock)
+   {
+	   int size = this.length / Disk.blockSize + 1;
+   }
+   
 
 }
